@@ -12,10 +12,14 @@ namespace study_worker.infra.Data
         public ApplicationDbContext() { }
 
         public DbSet<Course> Courses { get; set; }
+        public DbSet<Student> Students { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Course>().HasKey(c => c.Id);
+            modelBuilder.Entity<Course>()
+                .HasMany(c => c.Students)
+                .WithMany(s => s.Courses)
+                .UsingEntity(j => j.ToTable("CourseStudent"));
         }
     }
 }

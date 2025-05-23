@@ -8,9 +8,8 @@ namespace study_worker.infra.Data
     {
         public ApplicationDbContext CreateDbContext(string[] args = null)
         {
-            // Define o caminho base para o diretório do projeto .api
             var configuration = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory() + "/..") // Volta um diretório para acessar .api
+                .SetBasePath(Directory.GetCurrentDirectory() + "/..")
                 .AddJsonFile("study-worker.api/appsettings.json", optional: false)
                 .Build();
 
