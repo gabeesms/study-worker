@@ -4,7 +4,6 @@ using study_worker.domain.Model;
 using study_worker.infra.Messaging;
 using study_worker.service.DTOs;
 using study_worker.service.Interfaces;
-using System.Text.Json;
 
 namespace study_worker.service.Implementations
 {
@@ -48,7 +47,6 @@ namespace study_worker.service.Implementations
 
             await _studentRepository.AddAsync(student);
 
-            // Publish event to RabbitMQ usando o método correto
             var studentCreatedEvent = new StudentCreatedEvent
             {
                 EventType = "StudentCreated",
@@ -74,7 +72,6 @@ namespace study_worker.service.Implementations
 
             await _studentRepository.UpdateAsync(existingStudent);
 
-            // Publish event using our interface
             var studentUpdatedEvent = new StudentUpdatedEvent
             {
                 EventType = "StudentUpdated",
@@ -137,7 +134,6 @@ namespace study_worker.service.Implementations
 
             if (result)
             {
-                // Publish unenrollment event
                 var unenrollmentEvent = new StudentUnenrolledEvent
                 {
                     EventType = "StudentUnenrolled",

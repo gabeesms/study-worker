@@ -26,7 +26,6 @@ namespace study_worker.infra.Messaging
             _channel = _connection.CreateModel();
             _exchangeName = exchangeName;
 
-            // Declare exchange if it doesn't exist
             _channel.ExchangeDeclare(
                 exchange: _exchangeName,
                 type: "topic",
@@ -37,7 +36,6 @@ namespace study_worker.infra.Messaging
 
         public Task PublishAsync<T>(T message, CancellationToken cancellationToken = default) where T : class
         {
-            // Use the message type name as default routing key
             string routingKey = typeof(T).Name;
             return PublishAsync(message, routingKey, cancellationToken);
         }
@@ -50,11 +48,9 @@ namespace study_worker.infra.Messaging
             if (string.IsNullOrEmpty(routingKey))
                 throw new ArgumentException("Routing key is required", nameof(routingKey));
 
-            // Serialize the message to JSON
             string messageJson = JsonSerializer.Serialize(message);
             var body = Encoding.UTF8.GetBytes(messageJson);
 
-            // Create persistent message properties
             var properties = _channel.CreateBasicProperties();
             properties.Persistent = true;
             properties.ContentType = "application/json";
@@ -62,7 +58,6 @@ namespace study_worker.infra.Messaging
             properties.Type = typeof(T).FullName;
             properties.Timestamp = new AmqpTimestamp(DateTimeOffset.UtcNow.ToUnixTimeSeconds());
 
-            // Publish the message
             _channel.BasicPublish(
                 exchange: _exchangeName,
                 routingKey: routingKey,
