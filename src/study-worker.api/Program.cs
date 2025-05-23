@@ -1,7 +1,12 @@
 using Microsoft.EntityFrameworkCore;
-using study_worker.domain.Interfaces;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
+using study_worker.domain.Interfaces.Repositories;
 using study_worker.infra.Data;
+using study_worker.infra.Messaging;
 using study_worker.infra.Repositories;
+using study_worker.service.Implementations;
+using study_worker.service.Interfaces;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,8 +33,22 @@ builder.Services.AddCors(options =>
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// RabbitMQ Configuration
+var rabbitMQSettings = new RabbitMQSettings();
+builder.Configuration.GetSection("RabbitMQ").Bind(rabbitMQSettings);
+builder.Services.AddSingleton(rabbitMQSettings);
+
 // Configuração do repositório
 builder.Services.AddScoped<ICourseRepository, CourseRepository>();
+builder.Services.AddScoped<IStudentRepository, StudentRepository>();
+
+// Configuracao de Service 
+builder.Services.AddScoped<ICourseService, CourseService>();
+builder.Services.AddScoped<IStudentService, StudentService>();
+
+// Messaging registrations
+builder.Services.AddSingleton<IMessagePublisher, RabbitMQMessagePublisher>();
+builder.Services.AddHostedService<RabbitMQConsumer>();
 
 var app = builder.Build();
 
@@ -56,8 +75,8 @@ app.Use(async (context, next) =>
     }
     catch (Exception ex)
     {
-        // Log do erro (substitua pelo seu logger)
-        Console.WriteLine($"An error occurred: {ex.Message}");
+        var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An unhandled exception occurred");
         context.Response.StatusCode = 500; // Internal Server Error
         await context.Response.WriteAsync("An unexpected error occurred.");
     }
