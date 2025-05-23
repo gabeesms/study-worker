@@ -1,4 +1,5 @@
-﻿using study_worker.domain.Interfaces.Repositories;
+﻿using study_worker.domain.Events;
+using study_worker.domain.Interfaces.Repositories;
 using study_worker.domain.Model;
 using study_worker.infra.Messaging;
 using study_worker.service.DTOs;
@@ -40,7 +41,6 @@ namespace study_worker.service.Implementations
 
             await _courseRepository.AddAsync(course);
 
-            // Publish event to RabbitMQ usando nossa interface correta
             var courseCreatedEvent = new CourseCreatedEvent
             {
                 EventType = "CourseCreated",
@@ -50,7 +50,6 @@ namespace study_worker.service.Implementations
                 CreatedAt = course.CreatedAt
             };
 
-            // Usa o método PublishAsync da nossa interface
             await _messagePublisher.PublishAsync(courseCreatedEvent, "course_events");
 
             return MapToDto(course);

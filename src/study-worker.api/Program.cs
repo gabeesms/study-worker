@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
+using study_worker.domain.Events;
 using study_worker.domain.Interfaces.Repositories;
 using study_worker.infra.Data;
 using study_worker.infra.Messaging;
@@ -83,3 +84,6 @@ app.Use(async (context, next) =>
 });
 
 app.Run();
+
+
+
